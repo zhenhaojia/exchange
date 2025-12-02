@@ -1,172 +1,190 @@
-# 📚 二手书交易市场
+# 二手书交易平台 (Second-hand Books Exchange Platform)
 
-一个现代化的二手书交易Web应用，使用React + TypeScript + Material-UI构建。
+一个现代化的二手书交易网站，支持用户注册登录、图书发布、搜索购买、订单管理等功能。
 
-## 🌟 功能特性
+## 🛠️ 技术栈
 
-### 🏠 首页
-- 精选推荐图书展示
-- 热门分类浏览
-- 平台数据统计
-- 响应式设计
+### 前端
+- **React 18** - 现代化前端框架
+- **TypeScript** - 类型安全的JavaScript
+- **Material-UI (MUI)** - 现代化UI组件库
+- **React Router** - 单页应用路由
+- **Axios** - HTTP客户端
+- **Vite** - 快速构建工具
 
-### 🔍 图书浏览
-- 图书列表展示
-- 多条件筛选（分类、成色、价格等）
-- 搜索功能
-- 排序选项（最新、价格、评分等）
-- 分页加载
-
-### 📖 图书详情
-- 详细图书信息展示
-- 多图片预览
-- 卖家信息展示
-- 用户评价系统
-- 相关图书推荐
-
-### 📝 发布图书
-- 分步骤发布流程
-- 图片上传
-- 图书信息填写
-- 成色说明
-- 实时预览
-
-### 👤 用户系统
-- 用户注册/登录
-- 个人资料管理
-- 发布的图书管理
-- 交易订单查看
-- 收藏夹功能
-
-### 🛒 购物车
-- 商品添加/删除
-- 数量调整
-- 批量结算
-- 订单确认流程
-- 支付方式选择
-
-## 🛠 技术栈
-
-- **前端框架**: React 18 + TypeScript
-- **构建工具**: Vite
-- **UI组件库**: Material-UI (MUI)
-- **样式方案**: Tailwind CSS
-- **路由管理**: React Router DOM
-- **状态管理**: React Hooks
-- **图标库**: React Icons + Material-UI Icons
+### 后端
+- **Node.js** - 服务器运行环境
+- **Express** - Web应用框架
+- **MySQL** - 关系型数据库
+- **JWT** - 身份认证
+- **Multer** - 文件上传处理
+- **bcryptjs** - 密码加密
 
 ## 🚀 快速开始
 
 ### 环境要求
 - Node.js 16+
+- MySQL 8.0+
 - npm 或 yarn
 
-### 安装依赖
+### 1. 克隆项目
+```bash
+git clone https://github.com/zhenhaojia/exchange.git
+cd exchange
+```
+
+### 2. 安装依赖
 ```bash
 npm install
 ```
 
-### 启动开发服务器
+### 3. 环境配置
+复制环境变量模板：
 ```bash
+cp .env.example .env
+```
+
+编辑 `.env` 文件：
+```
+# 数据库配置
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=secondhand_books
+DB_CHARSET=utf8mb4
+
+# 服务器配置
+SERVER_PORT=3001
+
+# JWT密钥
+JWT_SECRET=your_jwt_secret_key
+```
+
+### 4. 数据库初始化
+```bash
+node init_mysql_simple.cjs
+```
+
+### 5. 启动项目
+
+#### 启动MySQL版本（推荐）
+```bash
+npm run dev:full
+```
+
+#### 启动SQLite版本（备用）
+```bash
+npm run dev:sqlite
+```
+
+#### 分别启动
+```bash
+# 启动后端
+npm run server  # MySQL版本
+npm run server-sqlite  # SQLite版本
+
+# 启动前端
 npm run dev
 ```
 
-### 构建生产版本
-```bash
-npm run build
-```
+## 📱 功能特性
 
-### 预览生产版本
-```bash
-npm run preview
-```
+### 核心功能
+- ✅ 用户注册/登录
+- ✅ 图书浏览/搜索
+- ✅ 图书发布/管理
+- ✅ 购物车功能
+- ✅ 订单管理
+- ✅ 用户资料管理
+- ✅ 图片上传
+
+### 高级功能
+- 🔍 多条件搜索筛选
+- 📱 响应式设计
+- 🏷️ 图书分类管理
+- 💬 用户评价系统
+- 📍 位置交易
+- 📊 数据统计
+
+## 📋 测试账号
+
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| admin | 123456 | 管理员 |
+| 张三 | 123456 | 普通用户 |
+| 李四 | 123456 | 普通用户 |
+| 王五 | 123456 | 普通用户 |
 
 ## 📁 项目结构
 
 ```
-src/
-├── components/          # 公共组件
-│   └── Navbar.tsx      # 导航栏组件
-├── pages/               # 页面组件
-│   ├── Home.tsx         # 首页
-│   ├── BookList.tsx     # 图书列表
-│   ├── BookDetail.tsx   # 图书详情
-│   ├── PostBook.tsx     # 发布图书
-│   ├── Login.tsx        # 登录页面
-│   ├── Register.tsx     # 注册页面
-│   ├── Profile.tsx      # 个人中心
-│   └── Cart.tsx         # 购物车
-├── App.tsx              # 主应用组件
-├── main.tsx            # 应用入口
-└── index.css           # 全局样式
+exchange/
+├── src/                    # 前端源码
+│   ├── components/         # 通用组件
+│   ├── pages/             # 页面组件
+│   ├── services/          # API服务
+│   └── types/             # TypeScript类型
+├── server.js              # MySQL版本后端
+├── server_sqlite.cjs       # SQLite版本后端
+├── database.sql           # 数据库结构
+├── init_mysql_simple.cjs   # MySQL初始化脚本
+└── public/                # 静态资源
 ```
 
-## 🎨 设计特色
+## 🎯 部署说明
 
-- **现代化UI**: 采用Material Design设计语言
-- **响应式布局**: 完美适配桌面端和移动端
-- **用户体验**: 流畅的交互动画和友好的操作反馈
-- **无障碍设计**: 遵循WCAG无障碍标准
+### 生产环境构建
+```bash
+# 构建前端
+npm run build
 
-## 📱 功能亮点
+# 预览构建结果
+npm run preview
+```
 
-### 智能搜索
-- 支持图书标题和作者搜索
-- 实时搜索建议
-- 搜索历史记录
+### 环境变量
+生产环境需要配置以下环境变量：
+- `DB_HOST` - 数据库主机
+- `DB_USER` - 数据库用户名
+- `DB_PASSWORD` - 数据库密码
+- `DB_NAME` - 数据库名称
+- `JWT_SECRET` - JWT密钥
 
-### 精准筛选
-- 多维度筛选条件
-- 筛选条件组合
-- 筛选结果实时更新
+## 🐛 常见问题
 
-### 便捷发布
-- 分步骤引导发布
-- 图片批量上传
-- 实时预览效果
-- 智能定价建议
+### 1. 数据库连接失败
+- 检查MySQL服务是否启动
+- 确认数据库用户名密码正确
+- 检查防火墙设置
 
-### 安全交易
-- 用户实名认证
-- 订单状态跟踪
-- 评价系统
-- 消息通知
+### 2. 端口冲突
+- 默认前端端口：5173
+- 默认后端端口：3001
+- 可通过环境变量修改
 
-## 🔧 开发指南
+### 3. 图片上传失败
+- 检查 `uploads/` 目录权限
+- 确认文件大小限制
 
-### 代码规范
-- 使用TypeScript进行类型检查
-- 遵循ESLint代码规范
-- 组件采用函数式写法
-- 使用React Hooks管理状态
+## 🤝 贡献指南
 
-### 样式规范
-- 优先使用Material-UI组件
-- 辅助使用Tailwind CSS类名
-- 响应式设计优先
-- 遵循Material Design设计原则
-
-## 🌐 浏览器支持
-
-- Chrome (推荐)
-- Firefox
-- Safari
-- Edge
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
 ## 📄 许可证
 
-MIT License
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request来改进这个项目！
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
 ## 📞 联系方式
 
 如有问题或建议，请通过以下方式联系：
-- 提交GitHub Issue
-- 发送邮件至开发团队
+- 提交 Issue
+- 发送邮件
+- 项目讨论区
 
 ---
 
-**让闲置图书重新发光，让知识传递价值！** 📚✨
+⭐ 如果这个项目对您有帮助，请给个 Star！
