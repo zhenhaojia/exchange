@@ -1,0 +1,256 @@
+.daily-checkin {
+  min-height: calc(100vh - 128px);
+  padding: 24px 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* 签到区域 */
+.checkin-section {
+  margin-bottom: 32px;
+}
+
+.checkin-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.checkin-content {
+  text-align: center;
+  width: 100%;
+}
+
+.checkin-icon {
+  font-size: 64px;
+  color: #1890ff;
+  margin-bottom: 16px;
+}
+
+.checkin-content .ant-typography {
+  text-align: center;
+}
+
+.checkin-content h2 {
+  color: #1a1a1a !important;
+  margin-bottom: 16px !important;
+}
+
+.checkin-content p {
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.checkin-stats {
+  margin: 32px 0;
+}
+
+.checkin-button {
+  height: 48px;
+  padding: 0 32px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 24px;
+}
+
+.checkin-button:disabled {
+  background: #d9d9d9 !important;
+  border-color: #d9d9d9 !important;
+  color: #999 !important;
+}
+
+.success-message {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 6px;
+  color: #52c41a;
+  font-weight: 500;
+}
+
+/* 日历卡片 */
+.calendar-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.checkin-calendar {
+  border: none;
+}
+
+.calendar-cell {
+  text-align: center;
+  font-size: 12px;
+}
+
+.calendar-legend {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+/* 每日推荐图书 */
+.daily-books-section {
+  margin-bottom: 32px;
+}
+
+.daily-book-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.daily-book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.book-cover {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  font-size: 12px;
+}
+
+.default-cover .anticon {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.book-author {
+  margin-bottom: 4px;
+  color: #666;
+  font-size: 12px;
+}
+
+.book-reward {
+  color: #faad14;
+  font-weight: 500;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+/* 统计区域 */
+.stats-section {
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+/* 图书详情模态框 */
+.book-detail {
+  display: flex;
+  gap: 24px;
+}
+
+.book-cover-large {
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.book-cover-large img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.default-cover-large {
+  width: 100%;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #999;
+}
+
+.default-cover-large .anticon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.book-info {
+  flex: 1;
+}
+
+.book-info h4 {
+  margin-bottom: 16px;
+}
+
+.book-info .ant-typography {
+  margin-bottom: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .daily-checkin {
+    padding: 16px 0;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .checkin-icon {
+    font-size: 48px;
+  }
+  
+  .checkin-content h2 {
+    font-size: 20px !important;
+  }
+  
+  .checkin-button {
+    height: 40px;
+    font-size: 14px;
+  }
+  
+  .book-detail {
+    flex-direction: column;
+  }
+  
+  .book-cover-large {
+    width: 100%;
+    align-self: center;
+  }
+}

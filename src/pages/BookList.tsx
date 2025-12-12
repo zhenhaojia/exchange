@@ -1,379 +1,304 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Slider,
-  Chip,
-  Box,
-  Pagination,
-  Drawer,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Checkbox,
-  FormControlLabel,
-  Rating
-} from '@mui/material'
-import {
-  Search as SearchIcon,
-  FilterList as FilterIcon,
-  ShoppingCart as CartIcon,
-  ExpandMore as ExpandMoreIcon,
-  LocalOffer as OfferIcon
-} from '@mui/icons-material'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Input, 
+  Select, 
+  Button, 
+  Pagination, 
+  Space, 
+  Spin,
+  Empty,
+  Slider
+} from 'antd'
+import { 
+  SearchOutlined, 
+  BookOutlined, 
+  CrownOutlined,
+  FilterOutlined,
+  ReloadOutlined
+} from '@ant-design/icons'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { bookService } from '../services/books'
+import { Book, BookFilters } from '../types'
+import { BOOK_CATEGORIES, BOOK_CONDITIONS } from '../constants'
+import BookCover from '../components/BookCover'
+import './BookList.css'
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  originalPrice: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  condition: string;
-  category: string;
-  seller: string;
-  location: string;
-  stock: number;
-}
+const { Option } = Select
+const { Search } = Input
 
-const BookList = () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+const BookList: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(false)
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(10)
+  const [total, setTotal] = useState(0)
+  const [current, setCurrent] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
+  const [filters, setFilters] = useState<BookFilters>({})
+  const [showFilters, setShowFilters] = useState(false)
 
-  // 筛选状态
-  const [filters, setFilters] = useState({
-    search: searchParams.get('search') || '',
-    category: '',
-    condition: '',
-    priceRange: [0, 500],
-    sortBy: 'newest',
-    inStock: true
-  })
-  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
-
-  // 模拟图书数据
-  const allBooks: Book[] = [
-    {
-      id: 1,
-      title: 'JavaScript高级程序设计',
-      author: 'Nicholas C. Zakas',
-      price: 35.0,
-      originalPrice: 89.0,
-      image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&h=400&fit=crop',
-      rating: 4.8,
-      reviews: 156,
-      condition: '九成新',
-      category: '计算机科学',
-      seller: '张同学',
-      location: '北京',
-      stock: 2
-    },
-    {
-      id: 2,
-      title: '深入理解计算机系统',
-      author: 'Randal E. Bryant',
-      price: 45.0,
-      originalPrice: 99.0,
-      image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=300&h=400&fit=crop',
-      rating: 4.9,
-      reviews: 234,
-      condition: '八成新',
-      category: '计算机科学',
-      seller: '李教授',
-      location: '上海',
-      stock: 1
-    },
-    {
-      id: 3,
-      title: '算法导论',
-      author: 'Thomas H. Cormen',
-      price: 55.0,
-      originalPrice: 128.0,
-      image: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=300&h=400&fit=crop',
-      rating: 4.7,
-      reviews: 189,
-      condition: '七成新',
-      category: '计算机科学',
-      seller: '王程序员',
-      location: '深圳',
-      stock: 3
-    }
-  ]
-
-  const categories = ['全部', '计算机科学', '文学小说', '经管励志', '外语学习', '生活百科', '教材教辅']
-  const conditions = ['全部', '全新', '九成新', '八成新', '七成新', '六成新以下']
-  const sortOptions = [
-    { value: 'newest', label: '最新发布' },
-    { value: 'price_low', label: '价格从低到高' },
-    { value: 'price_high', label: '价格从高到低' },
-    { value: 'rating', label: '评分最高' },
-    { value: 'popular', label: '最热门' }
-  ]
-
-  useEffect(() => {
+  const fetchBooks = async () => {
     setLoading(true)
-    // 模拟API调用
-    setTimeout(() => {
-      let filteredBooks = allBooks
-
-      // 搜索筛选
-      if (filters.search) {
-        filteredBooks = filteredBooks.filter(book =>
-          book.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-          book.author.toLowerCase().includes(filters.search.toLowerCase())
-        )
-      }
-
-      // 分类筛选
-      if (filters.category && filters.category !== '全部') {
-        filteredBooks = filteredBooks.filter(book => book.category === filters.category)
-      }
-
-      // 成色筛选
-      if (filters.condition && filters.condition !== '全部') {
-        filteredBooks = filteredBooks.filter(book => book.condition === filters.condition)
-      }
-
-      // 价格筛选
-      filteredBooks = filteredBooks.filter(book => 
-        book.price >= filters.priceRange[0] && book.price <= filters.priceRange[1]
-      )
-
-      // 库存筛选
-      if (filters.inStock) {
-        filteredBooks = filteredBooks.filter(book => book.stock > 0)
-      }
-
-      // 排序
-      switch (filters.sortBy) {
-        case 'price_low':
-          filteredBooks.sort((a, b) => a.price - b.price)
-          break
-        case 'price_high':
-          filteredBooks.sort((a, b) => b.price - a.price)
-          break
-        case 'rating':
-          filteredBooks.sort((a, b) => b.rating - a.rating)
-          break
-        default:
-          // newest - 保持原顺序
-          break
-      }
-
-      setBooks(filteredBooks)
+    try {
+      const result = await bookService.getBooks(filters, { page: current, limit: pageSize })
+      setBooks(result.books)
+      setTotal(result.total)
+    } catch (error) {
+      console.error('Failed to fetch books:', error)
+    } finally {
       setLoading(false)
-    }, 300)
-  }, [filters.search, filters.category, filters.condition, filters.priceRange, filters.sortBy, filters.inStock])
-
-  const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
+    }
   }
 
-  const addToCart = (book: Book) => {
-    console.log('添加到购物车:', book.title)
+  useEffect(() => {
+    fetchBooks()
+  }, [current, pageSize, filters])
+
+  const handleSearch = (value: string) => {
+    setFilters({ ...filters, search: value })
+    setCurrent(1)
+  }
+
+  const handleCategoryChange = (value: string) => {
+    setFilters({ ...filters, category: value || undefined })
+    setCurrent(1)
+  }
+
+  const handleConditionChange = (value: string) => {
+    setFilters({ ...filters, condition: value || undefined })
+    setCurrent(1)
+  }
+
+  const handlePriceRangeChange = (value: [number, number]) => {
+    setFilters({ 
+      ...filters, 
+      min_coins: value[0] > 0 ? value[0] : undefined,
+      max_coins: value[1] < 200 ? value[1] : undefined
+    })
+    setCurrent(1)
+  }
+
+  const handleReset = () => {
+    setFilters({})
+    setCurrent(1)
+  }
+
+  const getConditionLabel = (condition: string) => {
+    const found = BOOK_CONDITIONS.find(c => c.value === condition)
+    return found ? found.label : condition
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* 搜索和筛选栏 */}
-      <Box sx={{ mb: 4 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <input
-              placeholder="搜索图书名称、作者..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '16px',
-                border: '1px solid #ddd',
-                borderRadius: '8px'
+    <div className="book-list">
+      <div className="container">
+        {/* 搜索和筛选区域 */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="search-section"
+        >
+          <Card className="search-card">
+            <Row gutter={[16, 16]} align="middle">
+              <Col xs={24} sm={12} md={8}>
+                <Search
+                  placeholder="搜索书名或作者"
+                  allowClear
+                  enterButton={<SearchOutlined />}
+                  size="large"
+                  onSearch={handleSearch}
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                />
+              </Col>
+              
+              <Col xs={24} sm={12} md={4}>
+                <Select
+                  placeholder="选择分类"
+                  allowClear
+                  size="large"
+                  style={{ width: '100%' }}
+                  value={filters.category}
+                  onChange={handleCategoryChange}
+                >
+                  {BOOK_CATEGORIES.map(category => (
+                    <Option key={category} value={category}>
+                      {category}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+
+              <Col xs={24} sm={12} md={4}>
+                <Select
+                  placeholder="品相要求"
+                  allowClear
+                  size="large"
+                  style={{ width: '100%' }}
+                  value={filters.condition}
+                  onChange={handleConditionChange}
+                >
+                  {BOOK_CONDITIONS.map(condition => (
+                    <Option key={condition.value} value={condition.value}>
+                      {condition.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+
+              <Col xs={24} sm={12} md={8}>
+                <Space>
+                  <Button
+                    icon={<FilterOutlined />}
+                    onClick={() => setShowFilters(!showFilters)}
+                    size="large"
+                  >
+                    {showFilters ? '收起筛选' : '更多筛选'}
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={handleReset}
+                    size="large"
+                  >
+                    重置
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+
+            {/* 扩展筛选条件 */}
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="extended-filters"
+              >
+                <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+                  <Col xs={24} sm={12}>
+                    <div className="price-filter">
+                      <label>虚拟币范围：</label>
+                      <Slider
+                        range
+                        min={0}
+                        max={200}
+                        step={5}
+                        marks={{ 0: '0', 50: '50', 100: '100', 150: '150', 200: '200+' }}
+                        value={[
+                          filters.min_coins || 0,
+                          filters.max_coins || 200
+                        ]}
+                        onChange={handlePriceRangeChange}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+              </motion.div>
+            )}
+          </Card>
+        </motion.div>
+
+        {/* 统计信息 */}
+        <div className="stats-info">
+          <span>共找到 {total} 本图书</span>
+          {filters.search && <span> · 关键词：{filters.search}</span>}
+          {filters.category && <span> · 分类：{filters.category}</span>}
+        </div>
+
+        {/* 图书列表 */}
+        <Spin spinning={loading}>
+          {books.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="books-grid"
+            >
+              <Row gutter={[24, 24]}>
+                {books.map((book, index) => (
+                  <Col xs={24} sm={12} md={8} lg={6} key={book.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <Link to={`/books/${book.id}`}>
+                        <Card
+                          hoverable
+                          className="book-card"
+                          cover={
+                            <BookCover
+                              coverUrl={book.cover_image || book.cover_url}
+                              title={book.title}
+                              category={book.category}
+                              width={200}
+                              height={250}
+                            />
+                          }
+                        >
+                          <Card.Meta
+                            title={
+                              <div className="book-title" title={book.title}>
+                                {book.title}
+                              </div>
+                            }
+                            description={
+                              <div className="book-info">
+                                <p className="book-author">作者：{book.author}</p>
+                                <p className="book-category">分类：{book.category}</p>
+                                <p className="book-condition">
+                                  品相：{getConditionLabel(book.condition)}
+                                </p>
+                                <div className="book-footer">
+                                  <span className="book-coins">
+                                    <CrownOutlined /> {book.exchange_coins} 币
+                                  </span>
+                                  <span className="book-exchange-count">
+                                    已交换 {book.exchange_count} 次
+                                  </span>
+                                </div>
+                              </div>
+                            }
+                          />
+                        </Card>
+                      </Link>
+                    </motion.div>
+                  </Col>
+                ))}
+              </Row>
+            </motion.div>
+          ) : (
+            !loading && (
+              <Empty
+                description="暂无符合条件的图书"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                style={{ padding: '60px 0' }}
+              />
+            )
+          )}
+        </Spin>
+
+        {/* 分页 */}
+        {total > 0 && (
+          <div className="pagination-container">
+            <Pagination
+              current={current}
+              total={total}
+              pageSize={pageSize}
+              showSizeChanger
+              showQuickJumper
+              showTotal={(total, range) => 
+                `第 ${range[0]}-${range[1]} 本，共 ${total} 本`
+              }
+              onChange={(page, size) => {
+                setCurrent(page)
+                setPageSize(size || 12)
               }}
             />
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <FormControl fullWidth size="small">
-              <Select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              >
-                {sortOptions.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => setFilterDrawerOpen(true)}
-            >
-              筛选
-            </Button>
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* 图书列表 */}
-      <Typography variant="h5" gutterBottom>
-        共找到 {books.length} 本图书
-      </Typography>
-
-      <Grid container spacing={3}>
-        {books.map((book) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={book.id}>
-            <div
-              style={{
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                opacity: book.stock === 0 ? 0.6 : 1
-              }}
-              onClick={() => navigate(`/books/${book.id}`)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '4px 4px 8px rgba(0,0,0,0.1)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              <div
-                style={{
-                  height: 200,
-                  backgroundImage: `url(${book.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  position: 'relative'
-                }}
-              >
-                <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
-                  <span
-                    style={{
-                      backgroundColor: 'rgba(255,255,255,0.9)',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {book.condition}
-                  </span>
-                  {book.stock === 0 && (
-                    <span
-                      style={{
-                        backgroundColor: 'rgba(244, 67, 54, 0.9)',
-                        color: 'white',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px'
-                      }}
-                    >
-                      已售罄
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div style={{ padding: '16px' }}>
-                <h6 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold' }}>
-                  {book.title}
-                </h6>
-                <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
-                  {book.author}
-                </p>
-                <span style={{ fontSize: '12px', color: '2E7D32', display: 'block', marginBottom: '8px' }}>
-                  {book.category}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <Rating value={book.rating} precision={0.1} size="small" readOnly />
-                  <span style={{ marginLeft: '4px', fontSize: '12px', color: '#666' }}>
-                    ({book.reviews})
-                  </span>
-                </div>
-                <p style={{ fontSize: '12px', color: '#666', margin: '0 0 8px 0' }}>
-                  卖家: {book.seller} · {book.location}
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div>
-                    <span style={{ fontSize: '18px', color: '#2E7D32', fontWeight: 'bold' }}>
-                      ¥{book.price}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        color: '#666',
-                        textDecoration: 'line-through',
-                        marginLeft: '8px'
-                      }}
-                    >
-                      ¥{book.originalPrice}
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      backgroundColor: '#FF6B35',
-                      color: 'white',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {Math.round((1 - book.price / book.originalPrice) * 100)}%
-                  </span>
-                </div>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  disabled={book.stock === 0}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    addToCart(book)
-                  }}
-                  style={{
-                    backgroundColor: book.stock === 0 ? '#ccc' : '#2E7D32',
-                    color: 'white'
-                  }}
-                >
-                  {book.stock === 0 ? '已售罄' : '加入购物车'}
-                </Button>
-              </div>
-            </div>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* 分页 */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(e, value) => setPage(value)}
-          color="primary"
-        />
-      </Box>
-    </Container>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

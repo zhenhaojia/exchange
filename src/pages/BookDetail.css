@@ -1,0 +1,240 @@
+.book-detail {
+  min-height: calc(100vh - 128px);
+  padding: 24px 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.book-detail-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+}
+
+.book-detail-error {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 图书封面卡片 */
+.book-cover-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.book-cover {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  font-size: 16px;
+}
+
+.default-cover .anticon {
+  font-size: 64px;
+  margin-bottom: 8px;
+}
+
+.book-meta {
+  text-align: center;
+}
+
+.book-title {
+  margin-bottom: 8px !important;
+  font-size: 24px !important;
+  line-height: 1.4;
+}
+
+.book-author {
+  display: block;
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.book-tags {
+  margin-bottom: 20px;
+}
+
+.book-coins {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.coin-icon {
+  font-size: 20px;
+  color: #faad14;
+}
+
+.coin-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #faad14;
+}
+
+.coin-label {
+  color: #666;
+  font-size: 14px;
+}
+
+.book-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px 0;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-item .anticon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.stat-item span {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 图书信息卡片 */
+.book-info-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.owner-info {
+  margin-bottom: 24px;
+}
+
+.owner-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.owner-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.book-description {
+  margin-bottom: 24px;
+}
+
+.book-tags-section {
+  margin-bottom: 24px;
+}
+
+.book-actions {
+  margin-top: 24px;
+}
+
+.login-prompt {
+  text-align: center;
+  padding: 40px 20px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+/* 模态框样式 */
+.exchange-confirm,
+.read-confirm {
+  padding: 8px 0;
+}
+
+.exchange-info,
+.read-info {
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.exchange-info p,
+.read-info p {
+  margin-bottom: 8px;
+}
+
+.insufficient-coins {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .book-detail {
+    padding: 16px 0;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .book-cover {
+    height: 250px;
+  }
+  
+  .book-title {
+    font-size: 20px !important;
+  }
+  
+  .book-author {
+    font-size: 14px;
+  }
+  
+  .coin-amount {
+    font-size: 20px;
+  }
+  
+  .book-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .stat-item {
+    flex-direction: row;
+    justify-content: center;
+  }
+}

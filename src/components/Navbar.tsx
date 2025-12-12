@@ -1,160 +1,175 @@
-import React, { useState } from 'react'
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Box,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Badge,
-  TextField,
-  InputAdornment
-} from '@mui/material'
-import {
-  Menu as MenuIcon,
-  Search as SearchIcon,
-  ShoppingCart as CartIcon,
-  AccountCircle as UserIcon,
-  Home as HomeIcon,
-  Book as BookIcon,
-  PostAdd as PostAddIcon
-} from '@mui/icons-material'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Badge } from 'antd'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { 
+  HomeOutlined, 
+  BookOutlined, 
+  UserOutlined, 
+  LoginOutlined,
+  LogoutOutlined,
+  CrownOutlined,
+  RobotOutlined,
+  CalendarOutlined,
+  DollarOutlined,
+  MessageOutlined
+} from '@ant-design/icons'
+import { useAuthStore } from '../stores/authStore'
+import { useCoinStore } from '../stores/coinStore'
+import { messageService } from '../services/messages'
+import './Navbar.css'
 
-const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+const { Header } = Layout
+
+const Navbar: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, logout } = useAuthStore()
+  const { coins, transactions } = useCoinStore()
+  const [unreadCount, setUnreadCount] = useState(0)
 
-  const menuItems = [
-    { text: '首页', icon: <HomeIcon />, path: '/' },
-    { text: '图书列表', icon: <BookIcon />, path: '/books' },
-    { text: '发布图书', icon: <PostAddIcon />, path: '/post' },
-    { text: '我的', icon: <UserIcon />, path: '/profile' },
-  ]
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      navigate(`/books?search=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchQuery('')
-    }
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
   }
 
-  const drawer = (
-    <Box onClick={() => setMobileMenuOpen(false)} sx={{ textAlign: 'center', width: 250 }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        二手书市场
-      </Typography>
-        <List>
-          {menuItems.map((item) => (
-            <ListItem 
-              key={item.text} 
-              onClick={() => navigate(item.path)}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-        </List>
-    </Box>
+  useEffect(() => {
+    // 获取未读消息数量
+    if (user) {
+      messageService.getUnreadCount().then(count => {
+        setUnreadCount(count)
+      }).catch(error => {
+        console.error('获取未读消息数量失败:', error)
+      })
+    }
+  }, [user])
+
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: <Link to="/profile">个人中心</Link>,
+    },
+    {
+      key: 'coin-center',
+      icon: <DollarOutlined />,
+      label: <Link to="/coin-center">虚拟币中心</Link>,
+    },
+    {
+      key: 'divider1',
+      type: 'divider',
+    },
+    {
+      key: 'messages',
+      icon: <MessageOutlined />,
+      label: <Link to="/messages">消息中心</Link>,
+    },
+    {
+      key: 'book-content-admin',
+      icon: <BookOutlined />,
+      label: <Link to="/admin/book-content">内容管理</Link>,
+    },
+    {
+      key: 'divider2',
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: handleLogout,
+    },
+  ]
+
+  const menuItems = [
+    {
+      key: '/',
+      icon: <HomeOutlined />,
+      label: <Link to="/">首页</Link>,
+    },
+    {
+      key: '/books',
+      icon: <BookOutlined />,
+      label: <Link to="/books">图书广场</Link>,
+    },
+    {
+      key: '/ai-recommend',
+      icon: <RobotOutlined />,
+      label: <Link to="/ai-recommend">AI推荐</Link>,
+    },
+    ...(user ? [
+      {
+        key: '/daily-checkin',
+        icon: <CalendarOutlined />,
+        label: <Link to="/daily-checkin">每日签到</Link>,
+      }
+    ] : []),
+  ]
+
+  const todayTransactions = transactions.filter(t => 
+    new Date(t.created_at).toDateString() === new Date().toDateString()
   )
 
+  const hasCheckedInToday = todayTransactions.some(t => t.source === 'daily_checkin')
+
   return (
-    <>
-      <AppBar position="fixed" sx={{ bgcolor: '#2E7D32' }}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={() => setMobileMenuOpen(true)}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, cursor: 'pointer' }}
-            onClick={() => navigate('/')}
-          >
-            📚 二手书市场
-          </Typography>
+    <Header className="navbar">
+      <div className="navbar-container">
+        <div className="navbar-brand">
+          <BookOutlined className="brand-icon" />
+          <span className="brand-text">Exchange Cloud</span>
+        </div>
 
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, mr: 2, flex: 1, maxWidth: 400 }}>
-            <form onSubmit={handleSearch} style={{ width: '100%' }}>
-              <TextField
-                size="small"
-                placeholder="搜索图书..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{
-                  bgcolor: 'white',
-                  borderRadius: 1,
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { border: 'none' },
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </form>
-          </Box>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          className="navbar-menu"
+        />
 
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-            {menuItems.slice(1, 4).map((item) => (
-              <Button
-                key={item.text}
-                color="inherit"
-                startIcon={item.icon}
-                onClick={() => navigate(item.path)}
-                sx={{
-                  bgcolor: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent'
-                }}
-              >
-                {item.text}
-              </Button>
-            ))}
-            <IconButton color="inherit" onClick={() => navigate('/cart')}>
-              <Badge badgeContent={3} color="error">
-                <CartIcon />
+        <div className="navbar-actions">
+          {user ? (
+            <Space size="large">
+              <Badge count={coins} overflowCount={9999}>
+                <CrownOutlined className="coin-icon" />
               </Badge>
-            </IconButton>
-          </Box>
+              
+              {hasCheckedInToday && (
+                <Badge dot>
+                  <CalendarOutlined className="calendar-icon" />
+                </Badge>
+              )}
 
-          <IconButton
-            color="inherit"
-            onClick={() => navigate('/cart')}
-            sx={{ display: { xs: 'flex', md: 'none' } }}
-          >
-            <Badge badgeContent={3} color="error">
-              <CartIcon />
-            </Badge>
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        anchor="left"
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      >
-        {drawer}
-      </Drawer>
-    </>
+              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+                <Space className="user-info">
+                  <Avatar 
+                    src={user.avatar} 
+                    icon={<UserOutlined />}
+                    size="small"
+                  />
+                  <span className="username">{user.username}</span>
+                </Space>
+              </Dropdown>
+            </Space>
+          ) : (
+            <Space>
+              <Button 
+                type="text" 
+                icon={<LoginOutlined />}
+                onClick={() => navigate('/login')}
+              >
+                登录
+              </Button>
+              <Button 
+                type="primary"
+                onClick={() => navigate('/register')}
+              >
+                注册
+              </Button>
+            </Space>
+          )}
+        </div>
+      </div>
+    </Header>
   )
 }
 

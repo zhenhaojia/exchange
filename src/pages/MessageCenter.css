@@ -1,0 +1,318 @@
+.message-center .conversation-sidebar {
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-center .sidebar-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.message-center .sidebar-header h4 {
+  margin: 0;
+  color: #262626;
+}
+
+.message-center .conversation-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.message-center .conversation-item {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f5f5f5;
+  margin: 0 8px;
+  padding: 12px 8px;
+  border-radius: 8px;
+}
+
+.message-center .conversation-item:hover {
+  background-color: #f8f9fa;
+}
+
+.message-center .conversation-item.selected {
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.message-center .conversation-item .ant-list-item-meta-title {
+  margin-bottom: 4px;
+}
+
+.message-center .conversation-item .ant-list-item-meta-description {
+  line-height: 1.4;
+}
+
+.message-center .chat-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+}
+
+.message-center .chat-header {
+  padding: 16px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.message-center .chat-header .back-button {
+  display: none;
+}
+
+.message-center .messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  background: #f5f5f5;
+}
+
+.message-center .messages-list {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-center .message-item {
+  display: flex;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.message-center .message-item.sent {
+  flex-direction: row-reverse;
+}
+
+.message-center .message-item.sent .message-content {
+  align-items: flex-end;
+}
+
+.message-center .message-item.sent .message-bubble {
+  background: #1890ff;
+  color: white;
+  margin-left: auto;
+}
+
+.message-center .message-item.sent .message-time {
+  justify-content: flex-end;
+}
+
+.message-center .message-item.received {
+  flex-direction: row;
+}
+
+.message-center .message-item.received .message-content {
+  align-items: flex-start;
+}
+
+.message-center .message-item.received .message-bubble {
+  background: white;
+  color: #262626;
+  margin-right: auto;
+}
+
+.message-center .message-avatar {
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.message-center .message-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  min-width: 0;
+}
+
+.message-center .message-bubble {
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  word-wrap: break-word;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.message-center .message-book-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.message-center .message-item.received .message-book-info {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.message-center .message-time {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  opacity: 0.7;
+  padding: 0 4px;
+}
+
+.message-center .message-input-container {
+  padding: 16px 20px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+}
+
+.message-center .input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.message-center .input-wrapper .ant-input {
+  flex: 1;
+  border-radius: 20px;
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s;
+}
+
+.message-center .input-wrapper .ant-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.message-center .send-button {
+  border-radius: 20px;
+  padding: 0 20px;
+  height: 40px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.message-center .empty-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .message-center .conversation-sidebar {
+    width: 100%;
+    position: absolute;
+    z-index: 10;
+    transition: transform 0.3s ease;
+  }
+  
+  .message-center .chat-content {
+    width: 100%;
+  }
+  
+  .message-center .chat-header .back-button {
+    display: inline-flex;
+    margin-right: 8px;
+  }
+  
+  .message-center .messages-container {
+    padding: 12px;
+  }
+  
+  .message-center .message-content {
+    max-width: 85%;
+  }
+  
+  .message-center .message-input-container {
+    padding: 12px;
+  }
+  
+  .message-center .input-wrapper {
+    gap: 8px;
+  }
+  
+  .message-center .send-button {
+    padding: 0 16px;
+    height: 36px;
+  }
+}
+
+/* 滚动条样式 */
+.message-center .conversation-list::-webkit-scrollbar,
+.message-center .messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-center .conversation-list::-webkit-scrollbar-track,
+.message-center .messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message-center .conversation-list::-webkit-scrollbar-thumb,
+.message-center .messages-container::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.message-center .conversation-list::-webkit-scrollbar-thumb:hover,
+.message-center .messages-container::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* 加载状态 */
+.message-center .loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* 未读标记 */
+.message-center .unread-indicator {
+  width: 8px;
+  height: 8px;
+  background: #ff4d4f;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* 消息状态 */
+.message-center .message-status {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+.message-center .message-status.read {
+  opacity: 0.4;
+}
+
+/* 输入框状态 */
+.message-center .input-wrapper .ant-input.ant-input-disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* 动画效果 */
+.message-center .message-bubble {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

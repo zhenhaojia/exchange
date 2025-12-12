@@ -1,0 +1,88 @@
+.book-content-admin {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.book-selector {
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.book-selector:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.book-selector.selected {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.book-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+
+.book-icon {
+  font-size: 32px;
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+
+.chapter-card {
+  height: 100%;
+}
+
+.chapter-card .ant-card-actions {
+  display: flex;
+  justify-content: space-around;
+}
+
+.chapter-content {
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-content .ant-typography {
+  flex: 1;
+}
+
+.chapter-meta {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .book-content-admin {
+    padding: 10px;
+  }
+  
+  .chapter-card {
+    margin-bottom: 16px;
+  }
+}
+
+/* 动画效果 */
+.chapter-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

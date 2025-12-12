@@ -1,0 +1,316 @@
+.coin-center {
+  min-height: calc(100vh - 128px);
+  padding: 24px 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  margin-bottom: 16px !important;
+  color: #faad14 !important;
+}
+
+.page-header p {
+  font-size: 16px;
+  color: #666;
+}
+
+/* 统计行 */
+.stats-row {
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-card.primary {
+  background: linear-gradient(135deg, #faad14 0%, #fadb14 100%);
+  color: white;
+}
+
+.stat-card.success {
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  color: white;
+}
+
+.stat-card.danger {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  color: white;
+}
+
+.stat-card.info {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  color: white;
+}
+
+.stat-card .ant-statistic-title {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.stat-card .ant-statistic-content {
+  color: white;
+}
+
+/* 获取方式卡片 */
+.earning-ways-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.earning-timeline {
+  margin-top: 16px;
+}
+
+.way-item {
+  margin-bottom: 8px;
+}
+
+.way-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.way-icon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.way-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.way-item p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* 等级卡片 */
+.level-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.current-level {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.level-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.level-icon {
+  font-size: 48px;
+  color: #faad14;
+}
+
+.level-info {
+  text-align: center;
+}
+
+.level-name {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.level-number {
+  font-size: 14px;
+  color: #666;
+}
+
+.exp-info {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.level-progress {
+  margin-bottom: 24px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.level-progress-bar {
+  margin-bottom: 8px;
+}
+
+.progress-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+}
+
+.level-benefits h4 {
+  margin-bottom: 12px !important;
+  color: #333;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.benefits-list li {
+  padding: 6px 0;
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.benefits-list li::before {
+  content: "✓";
+  color: #52c41a;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* 消费方式卡片 */
+.spending-ways-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.spending-items {
+  margin-bottom: 24px;
+}
+
+.spending-item {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.spending-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.spending-icon {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.spending-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spending-title {
+  font-weight: 500;
+}
+
+.spending-item p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 交易记录 */
+.transactions-section {
+  margin-top: 32px;
+}
+
+.transactions-section .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.view-all {
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .coin-center {
+    padding: 16px 0;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .page-header h1 {
+    font-size: 24px !important;
+  }
+  
+  .stat-card .ant-statistic-content {
+    font-size: 20px;
+  }
+  
+  .level-icon {
+    font-size: 36px;
+  }
+  
+  .level-name {
+    font-size: 16px;
+  }
+  
+  .way-header,
+  .spending-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .spending-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .progress-header {
+    font-size: 12px;
+  }
+}

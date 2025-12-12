@@ -1,0 +1,95 @@
+.footer {
+  background: #001529 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 24px;
+}
+
+.footer-section {
+  margin-bottom: 32px;
+}
+
+.footer-section h4 {
+  color: white !important;
+  margin-bottom: 16px !important;
+  font-weight: 600 !important;
+}
+
+.footer-description {
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.6;
+  margin-bottom: 0 !important;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.footer-links li:hover {
+  color: white;
+}
+
+.footer-social {
+  display: flex;
+  gap: 16px;
+}
+
+.social-icon {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.social-icon:hover {
+  color: #1890ff;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 14px;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 32px 16px 16px;
+  }
+  
+  .footer-section {
+    margin-bottom: 24px;
+  }
+  
+  .footer-section h4 {
+    font-size: 16px !important;
+  }
+  
+  .footer-description {
+    font-size: 14px;
+  }
+  
+  .footer-links li {
+    font-size: 14px;
+  }
+}

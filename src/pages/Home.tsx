@@ -1,584 +1,654 @@
-import React, { useState, useEffect } from 'react'
-import {
-  Container,
-  Typography,
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  CardMedia,
-  Chip,
-  Rating,
-  Stack,
-  Paper,
-  Avatar,
-  LinearProgress,
-  Fade,
-  Slide,
-  Skeleton
-} from '@mui/material'
-import {
-  ArrowForward as ArrowIcon,
-  LocalShipping as ShippingIcon,
-  VerifiedUser as VerifiedIcon,
-  AttachMoney as MoneyIcon,
-  Favorite as FavoriteIcon,
-  Search as SearchIcon,
-  Add as AddIcon
-} from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
-import { booksAPI } from '../services/api'
+import React, { useEffect, useState } from 'react'
+import { Row, Col, Card, Typography, Button, Space, Statistic, Empty, Spin, Carousel, message, Modal, Divider } from 'antd'
+import { Link } from 'react-router-dom'
+import { 
+  BookOutlined, 
+  UserOutlined, 
+  CrownOutlined,
+  RocketOutlined,
+  SwapOutlined,
+  ReadOutlined,
+  RobotOutlined,
+  CalendarOutlined,
+  FireOutlined,
+  ClockCircleOutlined
+} from '@ant-design/icons'
 
-const Home = () => {
-  const navigate = useNavigate()
-  const [visible, setVisible] = useState(false)
-  const [featuredBooks, setFeaturedBooks] = useState<any[]>([])
-  const [categories, setCategories] = useState<any[]>([])
+import { useAuthStore } from '../stores/authStore'
+import { useCoinStore } from '../stores/coinStore'
+import { bookService } from '../services/books'
+import { statsService } from '../services/stats'
+import { Book } from '../types'
+import { COIN_CONFIG } from '../constants'
+import BookCover from '../components/BookCover'
+import './Home.css'
+
+const { Title, Paragraph } = Typography
+
+const Home: React.FC = () => {
+  const { user } = useAuthStore()
+  const { coins, fetchCoins, fetchTransactions } = useCoinStore()
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalBooks: 0,
+    totalExchanges: 0,
+    totalReadings: 0
+  })
+  const [featuredBooks, setFeaturedBooks] = useState<Book[]>([])
+  const [popularBooks, setPopularBooks] = useState<Book[]>([])
+  const [latestBooks, setLatestBooks] = useState<Book[]>([])
+  const [dailyRecommendations, setDailyRecommendations] = useState<Book[]>([])
+  const [carouselBooks, setCarouselBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setVisible(true)
+    const fetchData = async () => {
+      try {
+        const [statsData, featuredData, popularData, latestData, dailyData] = await Promise.all([
+          statsService.getStats(),
+          bookService.getBooks({}, { page: 1, limit: 6 }),
+          statsService.getPopularBooks(4),
+          statsService.getLatestBooks(4),
+          statsService.getDailyRecommendations(3)
+        ])
+
+        setStats(statsData)
+        setFeaturedBooks(featuredData.books || [])
+        setPopularBooks(popularData || [])
+        setLatestBooks(latestData || [])
+        setDailyRecommendations(dailyData || [])
+
+        // 如果用户已登录，获取最新的虚拟币状态
+        if (user?.id) {
+          await fetchCoins(user.id)
+          await fetchTransactions(user.id)
+        }
+        
+        // 设置轮播图书：如果每日推荐少于3本，用精选图书补充
+        const dailyBooks = dailyData || []
+        const additionalBooks = featuredData?.books?.filter(
+          book => !dailyBooks.some(dailyBook => dailyBook.id === book.id)
+        ).slice(0, 3 - dailyBooks.length) || []
+        
+        setCarouselBooks([...dailyBooks, ...additionalBooks])
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchData()
   }, [])
 
-  const fetchData = async () => {
-    try {
-      // 获取图书数据
-      const booksResponse = await booksAPI.getBooks({ limit: 4 })
-      
-      // 模拟分类数据（暂时使用静态数据，因为SQLite版本的分类API可能未实现）
-      const fallbackCategories = [
-        { name: '计算机科技', count: 1234, icon: '💻', color: '#2196F3' },
-        { name: '文学小说', count: 892, icon: '📚', color: '#4CAF50' },
-        { name: '经济管理', count: 656, icon: '📈', color: '#FF9800' },
-        { name: '外语学习', count: 445, icon: '🌍', color: '#9C27B0' },
-        { name: '生活休闲', count: 334, icon: '🏠', color: '#00BCD4' },
-        { name: '教材教辅', count: 567, icon: '🎓', color: '#795548' }
-      ]
-      
-      // 处理图书数据
-      const processedBooks = booksResponse.data.books.map((book: any) => {
-        let imageUrl = `https://via.placeholder.com/300x400/4CAF50/ffffff?text=${encodeURIComponent(book.title)}`;
-        
-        // 处理图片字段
-        if (book.images) {
-          try {
-            const images = typeof book.images === 'string' ? JSON.parse(book.images) : book.images;
-            if (images && images.length > 0) {
-              imageUrl = images[0];
-            }
-          } catch (e) {
-            console.warn('图片数据解析失败:', book.images);
-          }
-        }
-        
-        return {
-          ...book,
-          originalPrice: book.original_price || 0,
-          price: book.selling_price,
-          condition: book.condition_level,
-          discount: book.original_price ? Math.round((1 - book.selling_price / book.original_price) * 100) : 0,
-          reviews: Math.floor(Math.random() * 200) + 50, // 模拟评价数，后续可从评价API获取
-          image: imageUrl
-        };
-      })
-
-      setFeaturedBooks(processedBooks.slice(0, 4))
-      setCategories(fallbackCategories)
-    } catch (error) {
-      console.error('获取数据失败:', error)
-      // 如果API失败，使用完全模拟的数据
-      const fallbackBooks = [
-        {
-          id: 1,
-          title: 'JavaScript高级程序设计',
-          author: 'Nicholas C. Zakas',
-          price: 35.0,
-          originalPrice: 89.0,
-          image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&h=400&fit=crop',
-          rating: 4.8,
-          reviews: 156,
-          condition: '九成新',
-          discount: 61
-        }
-      ]
-      setFeaturedBooks(fallbackBooks)
-      setCategories(fallbackCategories)
-    } finally {
-      setLoading(false)
-    }
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px' }}>
+        <Spin size="large" />
+        <p style={{ marginTop: '16px', color: '#666' }}>加载首页数据中...</p>
+      </div>
+    )
   }
-
-  // 处理分类数据，添加图标和颜色
-  const categoryIcons: { [key: string]: string } = {
-    '计算机科技': '💻',
-    '文学小说': '📚',
-    '经济管理': '📈',
-    '教材教辅': '🎓',
-    '计算机科学': '💻',
-    '外语学习': '🌍',
-    '生活休闲': '🏠',
-    '生活百科': '🏠',
-    '艺术设计': '🎨',
-    '历史传记': '📜',
-    '少儿读物': '👶',
-    '考试考证': '📝',
-    '其他': '📦'
-  }
-
-  const categoryColors: { [key: string]: string } = {
-    '计算机科技': '#2196F3',
-    '文学小说': '#4CAF50',
-    '经济管理': '#FF9800',
-    '教材教辅': '#795548',
-    '计算机科学': '#2196F3',
-    '外语学习': '#9C27B0',
-    '生活休闲': '#00BCD4',
-    '生活百科': '#00BCD4',
-    '艺术设计': '#E91E63',
-    '历史传记': '#795548',
-    '少儿读物': '#FF9800',
-    '考试考证': '#F44336',
-    '其他': '#607D8B'
-  }
-
-  const processedCategories = categories.map((category: any) => ({
-    ...category,
-    icon: categoryIcons[category.name] || '📦',
-    color: categoryColors[category.name] || '#607D8B',
-    count: Math.floor(Math.random() * 1000) + 100 // 模拟数量，后续可从API获取
-  }))
-
-  const features = [
-    {
-      icon: VerifiedIcon,
-      title: '正品保障',
-      description: '所有图书经过严格审核，确保品质可靠'
-    },
-    {
-      icon: ShippingIcon,
-      title: '快速配送',
-      description: '支持同城面交，全国快递3天内送达'
-    },
-    {
-      icon: MoneyIcon,
-      title: '安全支付',
-      description: '多重支付方式，交易安全有保障'
-    },
-    {
-      icon: FavoriteIcon,
-      title: '个性推荐',
-      description: '基于AI智能算法，精准推荐您需要的图书'
-    }
-  ]
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Hero Section */}
-      <Fade in={visible} timeout={1000}>
-        <Paper 
-          elevation={0}
-          sx={{ 
-            textAlign: 'center', 
-            py: { xs: 6, md: 10 }, 
-            mb: 8,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: 4,
-            position: 'relative',
+    <div className="home">
+      {/* 轮播图区域 - 每日推荐图书 */}
+      <section style={{ marginBottom: '60px', padding: '0 24px' }}>
+        <Carousel 
+          autoplay 
+          dotPosition="right" 
+          autoplaySpeed={3000}
+          style={{
+            borderRadius: '12px',
             overflow: 'hidden'
           }}
         >
-          <Box sx={{ position: 'relative', zIndex: 2 }}>
-            <Typography 
-              variant="h2" 
-              component="h1" 
-              gutterBottom 
-              sx={{ 
-                color: 'white', 
-                fontWeight: 'bold',
-                fontSize: { xs: '2.5rem', md: '3.5rem' }
-              }}
-            >
-              📚 让知识再次发光
-            </Typography>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                color: 'rgba(255,255,255,0.9)', 
-                mb: 6,
-                maxWidth: 600,
-                mx: 'auto',
-                lineHeight: 1.6
-              }}
-            >
-              在这里，闲置的图书找到新的主人，知识的价值得以延续
-            </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<SearchIcon />}
-                onClick={() => navigate('/books')}
-                sx={{ 
-                  px: 5, 
-                  py: 2,
-                  fontSize: '1.1rem',
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  '&:hover': { 
-                    bgcolor: 'grey.100',
-                    transform: 'translateY(-2px)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                开始探索
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<AddIcon />}
-                onClick={() => navigate('/post')}
-                sx={{ 
-                  px: 5, 
-                  py: 2,
-                  fontSize: '1.1rem',
-                  borderColor: 'white',
+          {carouselBooks.length > 0 ? (
+            carouselBooks.map((book, index) => (
+              <div key={book.id}>
+                <div style={{
+                  height: '300px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   color: 'white',
-                  '&:hover': { 
-                    borderColor: 'white',
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                    transform: 'translateY(-2px)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                发布图书
-              </Button>
-            </Stack>
-          </Box>
-          {/* Decorative Elements */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.1)'
-            }}
-          />
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.08)'
-            }}
-          />
-        </Paper>
-      </Fade>
-
-
-
-      {/* Categories Section */}
-      <Box sx={{ mb: 10 }}>
-        <Typography variant="h4" component="h2" gutterBottom sx={{ textAlign: 'center', mb: 6, fontWeight: 'bold' }}>
-          📂 热门分类
-        </Typography>
-        {loading ? (
-          <Grid container spacing={3}>
-            {[1,2,3,4,5,6].map((item) => (
-              <Grid item xs={6} sm={4} md={2} key={item}>
-                <Skeleton variant="rectangular" height={120} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Grid container spacing={3}>
-            {processedCategories.map((category, index) => (
-              <Grid item xs={6} sm={4} md={2} key={index}>
-                <Slide 
-                  in={visible} 
-                  direction="up" 
-                  timeout={1200 + index * 100}
-                  mountOnEnter 
-                  unmountOnExit
-                >
-                  <Paper
-                    elevation={2}
-                    sx={{ 
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      p: 3,
-                      height: '100%',
-                      transition: 'all 0.3s ease',
-                      background: `linear-gradient(135deg, ${category.color}22 0%, ${category.color}44 100%)`,
-                      borderLeft: `4px solid ${category.color}`,
-                      '&:hover': { 
-                        transform: 'translateY(-6px)',
-                        boxShadow: '0 15px 30px rgba(0,0,0,0.15)',
-                        background: `linear-gradient(135deg, ${category.color}33 0%, ${category.color}66 100%)`
-                      }
-                    }}
-                    onClick={() => navigate('/books')}
-                  >
-                    <Typography variant="h3" gutterBottom>
-                      {category.icon}
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" gutterBottom>
-                      {category.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {category.count} 本图书
-                    </Typography>
-                  </Paper>
-                </Slide>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
-
-      {/* Featured Books */}
-      <Box sx={{ mb: 10 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold' }}>
-            🔥 精选推荐
-          </Typography>
-          <Button
-            endIcon={<ArrowIcon />}
-            onClick={() => navigate('/books')}
-            sx={{ fontWeight: 'bold' }}
-          >
-            查看更多
-          </Button>
-        </Box>
-        {loading ? (
-          <Grid container spacing={4}>
-            {[1,2,3,4].map((item) => (
-              <Grid item xs={12} sm={6} md={3} key={item}>
-                <Skeleton variant="rectangular" height={400} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Grid container spacing={4}>
-            {featuredBooks.map((book) => (
-              <Grid item xs={12} sm={6} md={3} key={book.id}>
-                <Card
-                  sx={{ 
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    maxWidth: '800px',
                     display: 'flex',
-                    flexDirection: 'column',
-                    '&:hover': { 
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.12)'
-                    }
-                  }}
-                  onClick={() => navigate(`/books/${book.id}`)}
-                >
-                  <Box sx={{ position: 'relative' }}>
-                    <CardMedia
-                      component="img"
-                      sx={{
-                        height: 250,
-                        objectFit: 'cover',
-                      }}
-                      image={book.image}
-                      alt={book.title}
-                    />
-                    {book.discount > 0 && (
-                      <Chip
-                        label={`省${book.discount}%`}
-                        size="small"
-                        sx={{
-                          position: 'absolute',
-                          top: 12,
-                          right: 12,
-                          bgcolor: '#ff4757',
-                          color: 'white',
+                    alignItems: 'center',
+                    gap: '40px',
+                    padding: '0 20px'
+                  }}>
+                    {/* 图书信息 */}
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <div style={{
+                        fontSize: '14px',
+                        opacity: 0.8,
+                        marginBottom: '8px',
+                        background: 'rgba(255,255,255,0.2)',
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        borderRadius: '12px'
+                      }}>今日推荐 #{index + 1}</div>
+                      
+                      <h1 style={{
+                        color: 'white',
+                        margin: '0 0 16px 0',
+                        fontSize: '36px',
+                        fontWeight: 'bold'
+                      }}>{book.title}</h1>
+                      
+                      <p style={{
+                        color: 'white',
+                        opacity: 0.9,
+                        margin: '0 0 16px 0',
+                        fontSize: '18px'
+                      }}>作者：{book.author}</p>
+                      
+                      <div style={{ display: 'flex', gap: '20px', margin: '20px 0' }}>
+                        <span style={{
+                          background: 'rgba(255,255,255,0.2)',
+                          padding: '4px 12px',
+                          borderRadius: '16px',
+                          fontSize: '14px'
+                        }}>{book.category}</span>
+                        
+                        <span style={{
+                          fontSize: '18px',
                           fontWeight: 'bold'
+                        }}>
+                          <CrownOutlined /> {book.exchange_coins} 币
+                        </span>
+                      </div>
+                      
+                      <Button 
+                        type="primary"
+                        size="large"
+                        style={{
+                          background: 'white',
+                          color: '#52c41a',
+                          border: 'none',
+                          borderRadius: '20px',
+                          height: '40px',
+                          fontSize: '16px'
                         }}
-                      />
-                    )}
-                    <Chip
-                      label={book.condition}
-                      size="small"
-                      sx={{
-                        position: 'absolute',
-                        top: 12,
-                        left: 12,
-                        bgcolor: 'rgba(255,255,255,0.9)'
-                      }}
-                    />
-                  </Box>
-                  <CardContent sx={{ flexGrow: 1, pb: 2 }}>
-                    <Typography variant="h6" gutterBottom noWrap sx={{ fontWeight: 'bold', mb: 1 }}>
-                      {book.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
-                      {book.author}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Rating value={book.rating || 4.5} precision={0.1} size="small" readOnly />
-                      <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                        ({book.reviews || 0} 评价)
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box>
-                        <Typography variant="h6" color="primary.main" fontWeight="bold">
-                          ¥{book.price}
-                        </Typography>
-                        {book.originalPrice && book.originalPrice > 0 && (
-                          <Typography variant="caption" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                            ¥{book.originalPrice}
-                          </Typography>
-                        )}
-                      </Box>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        sx={{
-                          minWidth: 'auto',
-                          px: 2
+                        onClick={async () => {
+                          console.log('免费阅读点击 - 当前用户:', user)
+                          
+                          // 检查认证状态
+                          if (!user || !user.id) {
+                            message.warning('请先登录')
+                            // 跳转到登录页
+                            window.location.href = '/login'
+                            return
+                          }
+
+                          try {
+                            console.log('开始免费阅读 - 用户ID:', user.id, '图书ID:', book.id)
+                            
+                            const coinService = (await import('../services/coins')).coinService
+                            await coinService.readCarouselBook(user.id, book.id)
+                            
+                            message.success(`免费阅读成功！获得${COIN_CONFIG.DAILY_READ_BONUS}虚拟币奖励！`)
+                            
+                            message.success(`免费阅读成功！获得${COIN_CONFIG.DAILY_READ_BONUS}虚拟币奖励！`)
+                            
+                            // 跳转到阅读页面
+                            window.location.href = `/read/${book.id}?free_read=true`
+                          } catch (error: any) {
+                            console.error('免费阅读失败:', error)
+                            
+                            // 如果是认证错误，提示重新登录
+                            if (error.message?.includes('unauthorized') || 
+                                error.message?.includes('authentication') ||
+                                error.message?.includes('login') ||
+                                error.message?.includes('user') ||
+                                error.code === '401' ||
+                                error.code === 'PGRST116') {
+                              message.error('登录状态已过期，请重新登录')
+                              // 清除本地状态并跳转到登录页
+                              const { logout } = useAuthStore.getState()
+                              await logout()
+                              window.location.href = '/login'
+                              return
+                            }
+                            
+                            message.error(error.message || '阅读失败，请稍后重试')
+                          }
                         }}
                       >
-                        查看详情
+                        📖 免费阅读
                       </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
+                    </div>
+                    
+                    {/* 图书封面 */}
+                    <div style={{ flex: '0 0 180px' }}>
+                      <BookCover
+                        coverUrl={book.cover_image || book.cover_url}
+                        title={book.title}
+                        category={book.category}
+                        width={180}
+                        height={240}
+                        style={{
+                          border: '3px solid white',
+                          boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div>
+              <div style={{
+                height: '300px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <BookOutlined style={{ fontSize: '64px', marginBottom: '20px' }} />
+                  <h1 style={{ color: 'white', margin: '0 0 16px 0' }}>让知识传递温暖</h1>
+                  <p style={{ color: 'white', opacity: 0.8 }}>公益二手书交流平台</p>
+                  <Button 
+                    type="primary"
+                    size="large"
+                    style={{
+                      background: 'white',
+                      color: '#667eea',
+                      border: 'none',
+                      marginTop: '24px'
+                    }}
+                  >
+                    <Link to="/books">开始探索</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </Carousel>
+      </section>
 
-      {/* Features Section */}
-      <Box sx={{ mb: 8 }}>
-        <Typography variant="h4" component="h2" gutterBottom sx={{ textAlign: 'center', mb: 6, fontWeight: 'bold' }}>
-          ✨ 为什么选择我们
-        </Typography>
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 4,
-                  textAlign: 'center',
-                  height: '100%',
-                  transition: 'all 0.3s ease',
-                  border: '2px solid #f0f0f0',
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 15px 30px rgba(0,0,0,0.1)'
-                  }
-                }}
-              >
-                <Avatar
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    mx: 'auto',
-                    mb: 2,
-                    bgcolor: 'primary.main',
-                    color: 'white'
+      {/* 统计数据区域 */}
+      <section style={{padding: '60px 0', background: '#fafafa'}}>
+        <div className="container">
+          <Row gutter={[24, 24]}>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="总用户数"
+                  value={stats.totalUsers}
+                  prefix={<UserOutlined />}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="图书数量"
+                  value={stats.totalBooks}
+                  prefix={<BookOutlined />}
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="交换次数"
+                  value={stats.totalExchanges}
+                  prefix={<SwapOutlined />}
+                  valueStyle={{ color: '#722ed1' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="阅读次数"
+                  value={stats.totalReadings}
+                  prefix={<ReadOutlined />}
+                  valueStyle={{ color: '#fa8c16' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </section>
+
+      {/* 功能介绍区域 */}
+      <section style={{padding: '80px 0'}}>
+        <div className="container">
+          <div style={{textAlign: 'center', marginBottom: '60px'}}>
+            <Title level={2} style={{
+              fontSize: '36px',
+              fontWeight: '600',
+              color: '#1a1a1a',
+              marginBottom: '16px'
+            }}>平台特色功能</Title>
+            <Paragraph style={{
+              fontSize: '18px',
+              color: '#666',
+              lineHeight: '1.6'
+            }}>
+              为您提供全方位的图书交流体验
+            </Paragraph>
+          </div>
+
+          <Row gutter={[32, 32]}>
+            <Col xs={24} sm={12} md={8}>
+              <Card style={{
+                height: '100%',
+                textAlign: 'center',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                border: '2px solid transparent'
+              }}
+              hoverable
+              className="feature">
+                <BookOutlined style={{
+                  fontSize: '48px',
+                  color: '#1890ff',
+                  marginBottom: '20px'
+                }} />
+                <Title level={4}>图书交换</Title>
+                <Paragraph>
+                  发布您的闲置图书，与其他书友进行交换，让每本书都找到新的主人
+                </Paragraph>
+              </Card>
+            </Col>
+
+            <Col xs={24} sm={12} md={8}>
+              <Card style={{
+                height: '100%',
+                textAlign: 'center',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                border: '2px solid transparent'
+              }}
+              hoverable
+              className="feature">
+                <CrownOutlined style={{
+                  fontSize: '48px',
+                  color: '#1890ff',
+                  marginBottom: '20px'
+                }} />
+                <Title level={4}>虚拟币系统</Title>
+                <Paragraph>
+                  通过签到、阅读推荐等方式获取虚拟币，用于图书交换和阅读
+                </Paragraph>
+              </Card>
+            </Col>
+
+            <Col xs={24} sm={12} md={8}>
+              <Card style={{
+                height: '100%',
+                textAlign: 'center',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                border: '2px solid transparent'
+              }}
+              hoverable
+              className="feature">
+                <RobotOutlined style={{
+                  fontSize: '48px',
+                  color: '#1890ff',
+                  marginBottom: '20px'
+                }} />
+                <Title level={4}>AI智能推荐</Title>
+                <Paragraph>
+                  基于您的阅读历史和偏好，AI为您量身推荐最适合的图书
+                </Paragraph>
+              </Card>
+            </Col>
+
+            <Col xs={24} sm={12} md={8}>
+              <Card style={{
+                height: '100%',
+                textAlign: 'center',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                border: '2px solid transparent'
+              }}
+              hoverable
+              className="feature">
+                <CalendarOutlined style={{
+                  fontSize: '48px',
+                  color: '#1890ff',
+                  marginBottom: '20px'
+                }} />
+                <Title level={4}>每日签到</Title>
+                <Paragraph>
+                  每日签到获得虚拟币奖励，阅读精选推荐图书还能获得额外奖励
+                </Paragraph>
+              </Card>
+            </Col>
+
+            <Col xs={24} sm={12} md={8}>
+              <Card style={{
+                height: '100%',
+                textAlign: 'center',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                border: '2px solid transparent'
+              }}
+              hoverable
+              className="feature">
+                <ReadOutlined style={{
+                  fontSize: '48px',
+                  color: '#1890ff',
+                  marginBottom: '20px'
+                }} />
+                <Title level={4}>在线阅读</Title>
+                <Paragraph>
+                  部分图书支持在线阅读，足不出户即可享受阅读的乐趣
+                </Paragraph>
+              </Card>
+            </Col>
+
+            <Col xs={24} sm={12} md={8}>
+              <Card style={{
+                height: '100%',
+                textAlign: 'center',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                border: '2px solid transparent'
+              }}
+              hoverable
+              className="feature">
+                <UserOutlined style={{
+                  fontSize: '48px',
+                  color: '#1890ff',
+                  marginBottom: '20px'
+                }} />
+                <Title level={4}>社区交流</Title>
+                <Paragraph>
+                  与志同道合的书友交流心得，分享阅读体验，共同成长
+                </Paragraph>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </section>
+
+      {/* 精选图书区域 */}
+      <section style={{padding: '80px 0', background: '#fafafa'}}>
+        <div className="container">
+          <div style={{textAlign: 'center', marginBottom: '60px'}}>
+            <Title level={2} style={{
+              fontSize: '36px',
+              fontWeight: '600',
+              color: '#1a1a1a',
+              marginBottom: '16px'
+            }}>精选图书</Title>
+            <Paragraph style={{
+              fontSize: '18px',
+              color: '#666',
+              lineHeight: '1.6'
+            }}>
+              为您推荐优质的二手图书
+            </Paragraph>
+          </div>
+
+          <Row gutter={[24, 24]}>
+            {featuredBooks && featuredBooks.length > 0 ? (
+              featuredBooks.slice(0, 6).map((book, index) => (
+                <Col xs={24} sm={12} md={8} key={book.id}>
+                  <Link to={`/books/${book.id}`} style={{display: 'block', height: '100%'}}>
+                    <Card
+                      hoverable
+                      style={{
+                        height: '100%',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        transition: 'all 0.2s'
+                      }}
+                      cover={
+                        <div style={{
+                          height: '200px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#f5f5f5',
+                          overflow: 'hidden'
+                        }}>
+                          {book.cover_image || book.cover_url ? (
+                            <img 
+                              src={book.cover_image || book.cover_url} 
+                              alt={book.title}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                            />
+                          ) : (
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              height: '100%',
+                              color: '#999'
+                            }}>
+                              <BookOutlined style={{fontSize: '48px', marginBottom: '8px'}} />
+                              <span>暂无封面</span>
+                            </div>
+                          )}
+                        </div>
+                      }
+                    >
+                      <Card.Meta
+                        title={book.title}
+                        description={
+                          <div>
+                            <p style={{marginBottom: '4px', color: '#666'}}>
+                              作者：{book.author}
+                            </p>
+                            <p style={{marginBottom: '8px', color: '#999', fontSize: '12px'}}>
+                              分类：{book.category}
+                            </p>
+                            <p style={{
+                              color: '#faad14',
+                              fontWeight: '500',
+                              marginBottom: '0'
+                            }}>
+                              <CrownOutlined /> {book.exchange_coins} 币
+                            </p>
+                          </div>
+                        }
+                      />
+                    </Card>
+                  </Link>
+                </Col>
+              ))
+            ) : (
+              <Col span={24} style={{ textAlign: 'center', padding: '50px' }}>
+                <Empty description="暂无精选图书" />
+              </Col>
+            )}
+          </Row>
+
+          <div className="section-footer">
+            <Button type="primary" size="large">
+              <Link to="/books">查看更多图书</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* 用户引导区域 */}
+      {!user && (
+        <section style={{
+          padding: '100px 0',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <div className="container">
+            <div style={{
+              textAlign: 'center',
+              color: 'white'
+            }}>
+              <Title level={2} style={{
+                color: 'white !important',
+                fontSize: '36px !important',
+                fontWeight: '600 !important',
+                marginBottom: '20px !important'
+              }}>
+                开启您的阅读之旅
+              </Title>
+              <Paragraph style={{
+                color: 'white !important',
+                opacity: 0.9,
+                fontSize: '18px',
+                lineHeight: '1.6',
+                marginBottom: '40px !important'
+              }}>
+                立即注册，获得50虚拟币奖励，免费享受海量优质图书资源
+              </Paragraph>
+              <Space size="large">
+                <Button 
+                  type="primary" 
+                  size="large" 
+                  style={{
+                    height: '48px',
+                    padding: '0 32px',
+                    fontSize: '16px',
+                    borderRadius: '24px',
+                    background: 'white !important',
+                    color: '#1890ff !important',
+                    border: 'none !important'
                   }}
                 >
-                  <feature.icon sx={{ fontSize: 28 }} />
-                </Avatar>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  {feature.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                  {feature.description}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Call to Action */}
-      <Fade in={visible} timeout={2000}>
-        <Paper
-          elevation={0}
-          sx={{ 
-            textAlign: 'center', 
-            py: { xs: 6, md: 8 }, 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            borderRadius: 4,
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          <Box sx={{ position: 'relative', zIndex: 2 }}>
-            <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-              🚀 立即加入我们的社区
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 6, maxWidth: 600, mx: 'auto', lineHeight: 1.7, opacity: 0.95 }}>
-              在这里，您可以找到性价比高的二手图书，也可以将自己的闲置图书卖给需要的人。
-              让我们一起为环保和知识传播贡献力量！
-            </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => navigate('/register')}
-                sx={{ 
-                  px: 5,
-                  py: 2,
-                  fontSize: '1.1rem',
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  fontWeight: 'bold',
-                  '&:hover': { 
-                    bgcolor: 'grey.100',
-                    transform: 'scale(1.05)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                立即注册
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => navigate('/about')}
-                sx={{ 
-                  px: 5,
-                  py: 2,
-                  fontSize: '1.1rem',
-                  color: 'white',
-                  borderColor: 'white',
-                  fontWeight: 'bold',
-                  '&:hover': { 
-                    borderColor: 'white',
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                    transform: 'scale(1.05)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                了解更多
-              </Button>
-            </Stack>
-          </Box>
-        </Paper>
-      </Fade>
-    </Container>
+                  <Link to="/register">立即注册</Link>
+                </Button>
+                <Button 
+                  size="large" 
+                  style={{
+                    height: '48px',
+                    padding: '0 32px',
+                    fontSize: '16px',
+                    borderRadius: '24px',
+                    border: '2px solid white !important',
+                    color: 'white !important',
+                    background: 'transparent !important'
+                  }}
+                >
+                  <Link to="/books">先看看</Link>
+                </Button>
+              </Space>
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
   )
 }
 
